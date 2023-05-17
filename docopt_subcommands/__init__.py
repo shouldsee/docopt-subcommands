@@ -6,11 +6,11 @@ _commands = []
 _non_command = None
 
 
-def command(name=None):
+def command(name=None,kw={}):
     """A decorator to register a subcommand with the global `Subcommands` instance.
     """
     def decorator(f):
-        _commands.append((name, f))
+        _commands.append((name, f,kw))
         return f
     return decorator
 
@@ -48,8 +48,8 @@ def main(program=None,
                 '`program` required if subcommand object not provided')
         commands = Subcommands(program,
                                doc_template=doc_template)
-        for name, handler in _commands:
-            commands.add_command(handler, name)
+        for name, handler, kw in _commands:
+            commands.add_command(handler, name, kw)
 
         if _non_command is not None:
             commands.set_non_command_handler(_non_command)

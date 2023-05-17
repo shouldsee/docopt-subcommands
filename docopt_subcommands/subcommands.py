@@ -65,10 +65,10 @@ class Subcommands:
 
     def __init__(self,
                  program,
-                 doc_template=None):
+                 doc_template=None, kw={}):
         if doc_template is None:
             doc_template = DEFAULT_DOC_TEMPLATE
-
+        self._kw = kw
         self._doc_template = doc_template
         self._commands = {}
         self._non_command_handler = lambda _: 0
@@ -90,14 +90,14 @@ class Subcommands:
             return f
         return decorator
 
-    def add_command(self, handler, name=None):
+    def add_command(self, handler, name=None, kw=None):
         """Add a subcommand `name` which invokes `handler`.
         """
         if name is None:
             name = docstring_to_subcommand(handler.__doc__)
 
         # TODO: Prevent overwriting 'help'?
-        self._commands[name] = handler
+        self._commands[name] = (handler,kw)
         
     def set_non_command_handler(self, handler):
         self._non_command_handler = handler
@@ -121,7 +121,7 @@ class Subcommands:
 
         # Try to find a command handler, defaulting to 'help' if no match it found.
         try:
-            handler = self._commands[command]
+            handler, kw  = self._commands[command]
             argv = [command] + common_config['<args>']
         except KeyError:
             print('"{}" is not a valid command.\n'.format(command))
@@ -132,7 +132,7 @@ class Subcommands:
             dedent(
                 handler.__doc__.format(
                     program=self.program,
-                    command=command)),
+                    command=command,**kw)),
             argv)
 
         # run the command
